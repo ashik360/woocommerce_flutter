@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:restapi/cart_screen.dart';
 import 'package:restapi/homepage.dart';
 import 'package:restapi/utils.dart';
 import 'api_service.dart';
@@ -36,9 +37,10 @@ class ProductGridScreenState extends State<ProductGridScreen> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        backgroundColor: const Color(0xFFF4F6FD),
         appBar: AppBar(
           centerTitle: true,
-          title: Text("WooCommerce Api Operation"),
+          title: Text("WooCommerce Api"),
           backgroundColor: AppColors.textWhite,
         ),
         body: _pages[_selectedIndex],
@@ -82,7 +84,7 @@ class ProductGridScreenState extends State<ProductGridScreen> {
       },
     ),
     Center(child: Text('Category Page', style: TextStyle(fontSize: 24))),
-    Center(child: Text('Cart Page', style: TextStyle(fontSize: 24))),
+    CartScreen(),
     Center(child: Text('Profile Page', style: TextStyle(fontSize: 24))),
   ];
 }

@@ -1,5 +1,8 @@
+// lib/product_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'api_service.dart';
+import 'cart_service.dart';
+import 'cart_screen.dart'; // Import the cart screen
 
 class ProductDetailScreen extends StatefulWidget {
   final int productId;
@@ -26,15 +29,46 @@ class ProductDetailScreenState extends State<ProductDetailScreen> {
     if (_quantity > 1) setState(() => _quantity--);
   }
 
+  // This method is called when "Add to Cart" button is pressed.
+  void _addToCart(Map<String, dynamic> product) {
+    CartService.addToCart(product, _quantity);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('"${product['name']}" added to cart (Qty: $_quantity).'),
+      ),
+    );
+    // Calling setState here will update the tooltip count if desired.
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F6FD),
       appBar: AppBar(
         title: const Text("Product Details"),
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
-        actions: [Icon(Icons.shopping_cart), SizedBox(width: 10)],
+        actions: [
+          Tooltip(
+            message: "Cart: ${CartService.itemCount} item(s)",
+            child: IconButton(
+              icon: const Icon(Icons.shopping_cart),
+              onPressed: () {
+                // Navigate to the CartScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CartScreen()),
+                ).then((_) {
+                  // Refresh state on return in case cart has changed.
+                  setState(() {});
+                });
+              },
+            ),
+          ),
+          const SizedBox(width: 10),
+        ],
       ),
       extendBodyBehindAppBar: true,
       body: FutureBuilder<Map<String, dynamic>>(
@@ -65,19 +99,17 @@ class ProductDetailScreenState extends State<ProductDetailScreen> {
                   height: MediaQuery.of(context).size.height * 0.4,
                   child: PageView.builder(
                     itemCount: images.length,
-                    onPageChanged:
-                        (index) => setState(() => _currentImageIndex = index),
-                    itemBuilder:
-                        (context, index) => Image.network(
-                          images[index]['src'],
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          errorBuilder:
-                              (_, __, ___) => Container(
-                                color: Colors.grey[200],
-                                child: const Icon(Icons.broken_image, size: 50),
-                              ),
-                        ),
+                    onPageChanged: (index) =>
+                        setState(() => _currentImageIndex = index),
+                    itemBuilder: (context, index) => Image.network(
+                      images[index]['src'],
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.broken_image, size: 50),
+                      ),
+                    ),
                   ),
                 )
               else
@@ -92,203 +124,187 @@ class ProductDetailScreenState extends State<ProductDetailScreen> {
                 initialChildSize: 0.6,
                 minChildSize: 0.6,
                 maxChildSize: 0.6,
-                builder:
-                    (context, scrollController) => Container(
-                      padding: const EdgeInsets.fromLTRB(
-                        24,
-                        0,
-                        24,
-                        24,
-                      ), // Reduced top padding
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(30),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
-                        ],
+                builder: (context, scrollController) => Container(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(30),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 20,
+                        spreadRadius: 5,
                       ),
-                      child: ListView(
-                        controller: scrollController,
-                        children: [
-                          if (images.length > 1)
-                            Padding(
-                              // Changed from Center to Padding
-                              padding: const EdgeInsets.only(
-                                bottom: 12,
-                              ), // Added bottom padding instead
-                              child: Wrap(
-                                alignment: WrapAlignment.center,
-                                spacing: 6,
-                                children: List.generate(
-                                  images.length,
-                                  (index) => Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color:
-                                          _currentImageIndex == index
-                                              ? Theme.of(context).primaryColor
-                                              : Colors.grey[300],
-                                    ),
-                                  ),
+                    ],
+                  ),
+                  child: ListView(
+                    controller: scrollController,
+                    children: [
+                      if (images.length > 1)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 6,
+                            children: List.generate(
+                              images.length,
+                              (index) => Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _currentImageIndex == index
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.grey[300],
                                 ),
                               ),
                             ),
-
-                          // Product Title and Price
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  product['name'] ?? "No Name",
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              if (isOnSale)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Text(
-                                    "SALE",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                            ],
                           ),
-                          const SizedBox(height: 10),
-
-                          // Price Row
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "\$${(double.tryParse(product['price'].toString()) ?? 0.0) * _quantity}",
+                        ),
+                      // Product Title and Price
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              product['name'] ?? "No Name",
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          if (isOnSale)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                "SALE",
                                 style: TextStyle(
-                                  fontSize: 28,
-                                  color: Theme.of(context).primaryColor,
+                                  color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              if (regularPrice != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 8.0),
-                                  child: Text(
-                                    "\$$regularPrice",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.grey,
-                                      decoration: TextDecoration.lineThrough,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Category and Rating
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _buildDetailChip(Icons.category, category),
-                              _buildDetailChip(Icons.star, "4.5 (128 reviews)"),
-                            ],
-                          ),
-                          const SizedBox(height: 30),
-
-                          // Quantity Selector
-                          Row(
-                            children: [
-                              const Text(
-                                "Quantity:",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const Spacer(),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[100],
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.remove),
-                                      onPressed: _decrementQuantity,
-                                      color: Colors.grey[800],
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                      ),
-                                      child: Text(
-                                        _quantity.toString(),
-                                        style: const TextStyle(fontSize: 18),
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.add),
-                                      onPressed: _incrementQuantity,
-                                      color: Theme.of(context).primaryColor,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 30),
-
-                          // Description
-                          const Text(
-                            "Description",
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      // Price Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "\$${(double.tryParse(product['price'].toString()) ?? 0.0) * _quantity}",
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 28,
+                              color: Theme.of(context).primaryColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          Text(
-                            product['description'] ??
-                                "No description available",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
-                              height: 1.5,
+                          if (regularPrice != null)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                "\$$regularPrice",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 100),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 20),
+                      // Category and Rating
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildDetailChip(Icons.category, category),
+                          _buildDetailChip(Icons.star, "4.5 (128 reviews)"),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
+                      // Quantity Selector
+                      Row(
+                        children: [
+                          const Text(
+                            "Quantity:",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const Spacer(),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.remove),
+                                  onPressed: _decrementQuantity,
+                                  color: Colors.grey[800],
+                                ),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  child: Text(
+                                    _quantity.toString(),
+                                    style: const TextStyle(fontSize: 18),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.add),
+                                  onPressed: _incrementQuantity,
+                                  color: Theme.of(context).primaryColor,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
+                      // Description
+                      const Text(
+                        "Description",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        product['description'] ??
+                            "No description available",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                ),
               ),
 
-              // Add to Cart Button
+              // Add to Cart Button at bottom
               Positioned(
                 bottom: 20,
                 left: 20,
                 right: 20,
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () => _addToCart(product),
                   icon: const Icon(Icons.shopping_cart),
                   label: const Text(
                     "Add to Cart",

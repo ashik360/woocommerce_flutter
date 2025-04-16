@@ -1,6 +1,9 @@
 
 import 'package:flutter/material.dart';
 
+class AppStrings {
+  
+}
 class AppImages {
   
 }

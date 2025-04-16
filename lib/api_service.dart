@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String _baseUrl = 'https://heatanimal.s1-tastewp.com/wp-json/wc/v3/products';
-  static const String _consumerKey = 'ck_db05dfc8d7627f8f4b85a39783d71398c664788f';
-  static const String _consumerSecret = 'cs_181980c50a7f8b2b083010f23c942fca38392bfb';
+  static const String _baseUrl = 'https://unabletank.s3-tastewp.com/wp-json/wc/v3/products';
+  static const String _consumerKey = 'ck_b83c4d632c394dc0e49aad44a9e1450c55782dc3';
+  static const String _consumerSecret = 'cs_35bf4173618a2ea5bce3b5a55db68bfbcfdc552f';
 
   // Fetch all products
   static Future<List<dynamic>> fetchProducts() async {
