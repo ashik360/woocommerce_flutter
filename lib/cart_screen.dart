@@ -1,4 +1,3 @@
-// cart_screen.dart
 import 'package:flutter/material.dart';
 import 'package:restapi/utils.dart';
 import 'cart_service.dart';

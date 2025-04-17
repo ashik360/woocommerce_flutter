@@ -1,5 +1,6 @@
 // lib/product_detail_screen.dart
 import 'package:flutter/material.dart';
+import 'package:restapi/utils.dart';
 import 'api_service.dart';
 import 'cart_service.dart';
 import 'cart_screen.dart'; // Import the cart screen
@@ -34,7 +35,8 @@ class ProductDetailScreenState extends State<ProductDetailScreen> {
     CartService.addToCart(product, _quantity);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('"${product['name']}" added to cart (Qty: $_quantity).'),
+        backgroundColor: const Color(0xFFF4F6FD),
+        content: Text('"${product['name']}" added to cart (Qty: $_quantity).', style: TextStyle(color: AppColors.textBlack),),
       ),
     );
     // Calling setState here will update the tooltip count if desired.
@@ -182,7 +184,7 @@ class ProductDetailScreenState extends State<ProductDetailScreen> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.red,
+                                color: Colors.pinkAccent,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: const Text(

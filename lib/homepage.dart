@@ -205,7 +205,7 @@ class ProductCard extends StatelessWidget {
                 top: 8,
                 right: 8,
                 child: CircleAvatar(
-                  backgroundColor: Colors.red[400],
+                  backgroundColor: Colors.pinkAccent,
                   child: IconButton(
                     icon: const Icon(Icons.favorite_border,
                       color: Colors.white),
@@ -223,7 +223,7 @@ class ProductCard extends StatelessWidget {
                       horizontal: 8,
                       vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.red,
+                      color: Colors.pinkAccent,
                       borderRadius: BorderRadius.circular(10)),
                     child: const Text(
                       'SALE',
